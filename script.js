@@ -36,19 +36,20 @@ function conectarBBDD () {
 }
 
 /*Conexión API*/
-const actualizarBtn = document.getElementById('getApiData');
-if (actualizarBtn) {
-    actualizarBtn.addEventListener('click', () => {
-        fetch('https://fakestoreapi.com/products')
-            .then(response => response.json())
-            .then(data => {
-                // Llamamos a la función para guardar los datos en IndexedDB
-                guardarEnIndexedDB(data);
-            })
-            .catch(error => console.error('Error al cargar los datos de la API:', error));
-    });
-}
-
+window.addEventListener("load",function(event) {
+    const actualizarBtn = document.getElementById('getApiData');
+    if (actualizarBtn) {
+        actualizarBtn.addEventListener('click', () => {
+            fetch('https://fakestoreapi.com/products')
+                .then(response => response.json())
+                .then(data => {
+                    // Llamamos a la función para guardar los datos en IndexedDB
+                    guardarEnIndexedDB(data);
+                })
+                .catch(error => console.error('Error al cargar los datos de la API:', error));
+        });
+    }
+},false);
 
 
 /*Guardar en Base de datos*/
@@ -82,9 +83,9 @@ function mostrarDatos() {
 
         request.onsuccess = event => {
             const productos = request.result;
-            productos.forEach(data => {
-                const card  = document.createElement('div');
-                card.classList.add('col-md-4','d-flex', 'justify-content-center', 'mb-4'); 
+            productos.forEach((data, index) => {
+                const card = document.createElement('div');
+                card.classList.add('col-md-4', 'd-flex', 'justify-content-center', 'mb-4');
                 card.innerHTML = `
                     <div class="card" style="width: 18rem;">
                         <img src="${data.image}" class="card-img-top" alt="...">
@@ -93,18 +94,39 @@ function mostrarDatos() {
                             <p class="card-text">${data.category}</p>
                             <p class="card-text">${data.description}</p>
                             <p class="card-text">${data.price}</p>
-                            <a href="javascript:addProductCart(${data.productId})" class="btn btn-dark">Añadir al carrito</a>
+                            <a href="javascript:addProductCart(${data.productId})" class="btn btn-dark" id="liveToastBtn_${index}">Añadir al carrito</a>
+                            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                                <div id="liveToast_${index}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="toast-header">
+                                        <small>11 mins ago</small>
+                                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                    <div class="toast-body">
+                                        Su producto ha sido agregado correctamente al carrito
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
                 userDataContainer.appendChild(card);
+
+                const toastTrigger = document.getElementById(`liveToastBtn_${index}`);
+                const toastLiveExample = document.getElementById(`liveToast_${index}`);
+
+                if (toastTrigger) {
+                    const toastBootstrap = new bootstrap.Toast(toastLiveExample);
+                    toastTrigger.addEventListener('click', () => {
+                        toastBootstrap.show();
+                    });
+                }
             });
         };
+
     } catch (err) {
         console.error('Aún no se han incorporado datos en la BBDD');
     }
 }
-
 /*Agregar productos al carrito*/
 
 function addProductCart(productId) {
@@ -213,29 +235,31 @@ function mostrarCarrito() {
                 <tr>
                     <th scope="col"></th>
                     <th scope="col">Title</th>
-                    <th scope="col">Price</th>
                     <th scope="col">Cantidad</th>
+                    <th scope="col">Price</th>
                 </tr>
             `;
 
             const tbody = document.createElement('tbody');
+            let totalCarrito = 0; // Inicializar el total del carrito
 
             productos.forEach((data, index) => {
                 const row = document.createElement('tr');
+               const subtotal = data.price * data.cantidad;
+            totalCarrito += subtotal; // Sumar al total del carrito
+
                 row.innerHTML = `
                     <th scope="row">${index + 1}</th>
                     <td>${data.title}</td>
-                    <td>${data.price}</td>
                     <td>
                         <span class="me-2">${data.cantidad}</span>
                         <div class="text-end">
                             <a href="javascript:modificarCantidad(${data.id}, '-')" class="btn btn-outline-info">-</a>
                             <a href="javascript:modificarCantidad(${data.id}, '+')" class="btn btn-outline-success">+</a>
-                            <a href="javascript:removeProductCart(${data.id})" "class="btn btn-outline-danger">Eliminar producto</a>
+                            <a href="javascript:removeProductCart(${data.id})" class="btn btn-outline-danger">Eliminar producto</a>
                         </div>
-                        
                     </td>
-                  
+                    <td><span class="text-end">${subtotal}</span></td>                
                 `;
                 tbody.appendChild(row);
             });
@@ -244,6 +268,11 @@ function mostrarCarrito() {
             table.appendChild(tbody);
 
             userDataContainer.appendChild(table);
+
+            // Mostrar el total del carrito
+            const totalElement = document.createElement('div');
+            totalElement.innerHTML = `<p class="text-end fw-bold">Total del carrito: ${totalCarrito}</p>`;
+            userDataContainer.appendChild(totalElement);
         };
     } catch (err) {
         console.error('Aún no se han incorporado datos en la BBDD');
