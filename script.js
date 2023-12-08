@@ -85,12 +85,12 @@ function mostrarDatos() {
             const productos = request.result;
             productos.forEach((data, index) => {
                 const card = document.createElement('div');
-                card.classList.add('col-md-4', 'd-flex', 'justify-content-center', 'mb-4');
+                card.classList.add('col', 'mb-4');
                 card.innerHTML = `
-                    <div class="card" style="width: 18rem;">
-                        <img src="${data.image}" class="card-img-top" alt="...">
+                    <div class="card h-100">
+                        <img src="${data.image}" class="card-img-top" alt="Product Image" style="max-height: 400px; object-fit: cover;">
                         <div class="card-body">
-                            <h5>${data.title}</h5>
+                            <h5 class="card-title">${data.title}</h5>
                             <p class="card-text">${data.category}</p>
                             <p class="card-text">${data.description}</p>
                             <p class="card-text">${data.price}</p>
@@ -98,7 +98,7 @@ function mostrarDatos() {
                             <div class="toast-container position-fixed bottom-0 end-0 p-3">
                                 <div id="liveToast_${index}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
                                     <div class="toast-header">
-                                        <small>11 mins ago</small>
+                                        <small>Muchas gracias por comprar en nuestra tienda</small>
                                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                                     </div>
                                     <div class="toast-body">
@@ -111,6 +111,7 @@ function mostrarDatos() {
                 `;
                 userDataContainer.appendChild(card);
 
+                // Resto del código para los toasts
                 const toastTrigger = document.getElementById(`liveToastBtn_${index}`);
                 const toastLiveExample = document.getElementById(`liveToast_${index}`);
 
@@ -229,7 +230,7 @@ function mostrarCarrito() {
         request.onsuccess = event => {
             const productos = request.result;
             const table = document.createElement('table');
-            table.classList.add('table', 'table-striped', 'table-bordered');
+            table.classList.add('table', 'table-striped', 'table-bordered',);
             const thead = document.createElement('thead');
             thead.innerHTML = `
                 <tr>
@@ -259,7 +260,7 @@ function mostrarCarrito() {
                             <a href="javascript:removeProductCart(${data.id})" class="btn btn-outline-danger">Eliminar producto</a>
                         </div>
                     </td>
-                    <td><span class="text-end">${subtotal}</span></td>                
+                    <td><span class="text-end">${subtotal}</span></td>             
                 `;
                 tbody.appendChild(row);
             });
